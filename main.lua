@@ -12,7 +12,7 @@ local COLOR_AQUA = "\\#88EEAA\\"
 
 -- Array of levels, or `nil` if `scan_levels` has not been called yet.
 ---@type table | nil
-local levels = nil
+LPLevels = nil
 
 local function scan_levels()
   local levels = {}
@@ -26,13 +26,13 @@ local function scan_levels()
 end
 
 local function list_levels()
-  if levels == nil then
+  if LPLevels == nil then
     return
   end
 
   ---@param level CustomLevelInfo
   ---@param idx integer
-  for idx,level in pairs(levels) do
+  for idx,level in pairs(LPLevels) do
     local message = string.format(
       COLOR_AQUA .. "%d: " .. COLOR_DEFAULT .. level.fullName .. " (" .. level.shortName .. ")",
       idx
@@ -46,7 +46,7 @@ end
 
 ---@param num string
 local function try_warp_to_level(num)
-  if levels == nil then
+  if LPLevels == nil then
     return
   end
 
@@ -58,7 +58,7 @@ local function try_warp_to_level(num)
   end
 
   --- @type CustomLevelInfo | nil
-  local level = levels[levelNum]
+  local level = LPLevels[levelNum]
   if level == nil then
     djui_chat_message_create(COLOR_ERROR .. "Unknown level." .. COLOR_DEFAULT)
     return
@@ -70,8 +70,8 @@ end
 
 -- TODO: Match on shortName and fullName too
 hook_chat_command("lp", "({number}) List and teleport to available levels", function (msg)
-  if levels == nil then
-    levels = scan_levels()
+  if LPLevels == nil then
+    LPLevels = scan_levels()
   end
 
   if msg:len() > 0 then
