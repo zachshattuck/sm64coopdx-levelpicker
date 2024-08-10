@@ -29,7 +29,8 @@ local function list_levels()
     return
   end
 
-  -- level: CustomLevelInfo
+  ---@param level CustomLevelInfo
+  ---@param idx integer
   for idx,level in pairs(levels) do
     -- local is_vanilla = level_is_vanilla_level(level.levelNum)
     local message = string.format(
@@ -43,7 +44,8 @@ local function list_levels()
   djui_chat_message_create(COLOR_YELLOW .. "NOTE: If a level listed more than once, it probably exists for multiple game modes." .. COLOR_DEFAULT)
 end
 
-local function try_warp_to_level(num) 
+---@param num string
+local function try_warp_to_level(num)
   if levels == nil then
     return
   end
@@ -55,7 +57,7 @@ local function try_warp_to_level(num)
     return
   end
 
-  -- level: CustomLevelInfo | nil
+  --- @type CustomLevelInfo | nil
   local level = levels[levelNum]
   if level == nil then
     djui_chat_message_create(COLOR_ERROR .. "Unknown level." .. COLOR_DEFAULT)
@@ -64,8 +66,6 @@ local function try_warp_to_level(num)
 
   djui_chat_message_create(COLOR_AQUA .. "Warping to \"" .. level.fullName .. "\"..." .. COLOR_DEFAULT)
   warp_to_level(level.levelNum, 1, 0)
-
-  return
 end
 
 -- TODO: Match on shortName and fullName too
