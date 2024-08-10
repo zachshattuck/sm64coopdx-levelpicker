@@ -11,6 +11,7 @@ local COLOR_YELLOW = "\\#CCCC00\\"
 local COLOR_AQUA = "\\#88EEAA\\"
 
 -- Array of levels, or `nil` if `scan_levels` has not been called yet.
+---@type table | nil
 local levels = nil
 
 local function scan_levels()
@@ -32,7 +33,6 @@ local function list_levels()
   ---@param level CustomLevelInfo
   ---@param idx integer
   for idx,level in pairs(levels) do
-    -- local is_vanilla = level_is_vanilla_level(level.levelNum)
     local message = string.format(
       COLOR_AQUA .. "%d: " .. COLOR_DEFAULT .. level.fullName .. " (" .. level.shortName .. ")",
       idx
