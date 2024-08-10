@@ -10,6 +10,8 @@ local COLOR_DEFAULT = "\\#FFFFFF\\"
 local COLOR_YELLOW = "\\#CCCC00\\"
 local COLOR_AQUA = "\\#88EEAA\\"
 
+-- Array of levels, or `nil` if `scan_levels` has not been called yet.
+local levels = nil
 
 local function scan_levels()
   local levels = {}
@@ -21,8 +23,6 @@ local function scan_levels()
   end
   return levels
 end
-local levels = nil --= scan_levels()
-
 
 local function list_levels()
   if levels == nil then
@@ -31,17 +31,16 @@ local function list_levels()
 
   -- level: CustomLevelInfo
   for idx,level in pairs(levels) do
-    local is_vanilla = level_is_vanilla_level(level.levelNum)
-    local idx_and_name = string.format(COLOR_AQUA .. "%d:" .. COLOR_DEFAULT .. " %s", idx, level.fullName)
-    local full_string
-    if is_vanilla then
-      full_string = idx_and_name .. " (Vanilla)"
-    else
-      full_string = idx_and_name .. COLOR_YELLOW .. " (Modded)" .. COLOR_DEFAULT
-    end
+    -- local is_vanilla = level_is_vanilla_level(level.levelNum)
+    local message = string.format(
+      COLOR_AQUA .. "%d: " .. COLOR_DEFAULT .. level.fullName .. " (" .. level.shortName .. ")",
+      idx
+    )
 
-    djui_chat_message_create(full_string)
+    djui_chat_message_create(message)
   end
+
+  djui_chat_message_create(COLOR_YELLOW .. "NOTE: If a level listed more than once, it probably exists for multiple game modes." .. COLOR_DEFAULT)
 end
 
 local function try_warp_to_level(num) 
@@ -69,7 +68,8 @@ local function try_warp_to_level(num)
   return
 end
 
-hook_chat_command("lp", "List available levels", function (msg)
+-- TODO: Match on shortName and fullName too
+hook_chat_command("lp", "({number}) List and teleport to available levels", function (msg)
   if levels == nil then
     levels = scan_levels()
   end
