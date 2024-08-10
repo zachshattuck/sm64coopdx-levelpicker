@@ -10,18 +10,16 @@ local hud_height = screenHeight*3/4
 local row_width = screenWidth*3/4
 local row_height = 30
 
+local s = gPlayerSyncTable[0]
+
 -- Signals to stop rendering hud and resets some UI state
 local function cleanup_hud()
-  gPlayerSyncTable[0].lpShowHud = false
-  gPlayerSyncTable[0].lpPage = 1
+  s.lpShowHud = false
+  s.lpPage = 1
 end
 
 local function hud_render()
-  --- @type table | nil
-  if gPlayerSyncTable[0].lpLevels == nil then
-    return
-  end
-  if gPlayerSyncTable[0].lpShowHud == false then
+  if !s.lpShowHud or !s.lpLevels then
     return
   end
 
@@ -32,15 +30,15 @@ local function hud_render()
   djui_hud_set_color(100, 255, 100, 255)
   djui_hud_print_text(text, (screenWidth - djui_hud_measure_text(text)) / 2, 50, 1)
 
-  -- for i = gPlayerSyncTable[0].lpPage, gPlayerSyncTable[0].lpPage+per_page, 1 do
-  --   local level_idx = gPlayerSyncTable[0]*per_page + i
+  -- for i = s.lpPage, s.lpPage+per_page, 1 do
+  --   local level_idx = s*per_page + i
   --   local row_x = screenWidth / 2 - row_width - 2
   --   local row_y = 50 + (row_height + 2) * 1
 
   --   djui_hud_set_color(100, 100, 100, 255)
   --   djui_hud_render_rect(row_x, row_y, row_width, row_height)
 
-  --   local level = gPlayerSyncTable[0].lpLevels[level_idx]
+  --   local level = s.lpLevels[level_idx]
   --   if level == nil then
   --     djui_hud_set_color(255, 0, 0, 255)
   --     djui_hud_print_text("uh oh", 0, 0, 1)

@@ -3,14 +3,16 @@
 
 
 
+-- gPlayerSyncTable[0] always refers to local player
+local playerState = gPlayerSyncTable[0]
 
--- gGlobalSyncTable is used for networking; shared between all clients
-gPlayerSyncTable[0].lpShowHud = false
-gPlayerSyncTable[0].lpPage = 1
+playerState.lpShowHud = false
+playerState.lpPage = 1
 
 ---@type table | nil
 -- Array of levels, or `nil` if `scan_levels` has not been called yet.
-gPlayerSyncTable[0].lpLevels = nil
+playerState.lpLevels = nil
+-- playerState.lpLevelsCount = 0
 
 -- Max possible level number (`u16`).  
 -- *(Based on `CustomLevelInfo` in `smlua_level_utils.h`)*
@@ -34,8 +36,9 @@ local function scan_levels()
     end
   end
 
-  gPlayerSyncTable[0].lpLevels = levels
-  gPlayerSyncTable[0].levelsCount = count
+  -- playerState.lpLevels = levels
+  -- playerState.levelsCount = count
+  return levels, count
 end
 
 -- local function list_levels()
@@ -83,11 +86,20 @@ end
 
 -- TODO: Match on shortName and fullName too
 hook_chat_command("lp", "({number}) List and teleport to available levels", function (msg)
-  if gPlayerSyncTable[0].lpLevels == nil then
-    scan_levels()
+  if !playerState.lpLevels or !playerState.levelsCount then
+    local levels, count = scan_levels()
+    playerState.lpLevels = levels
+    -- playerState.lpLevelsCount = count
+    -- local did_error, wtf_happened = pcall(scan_levels)
+    -- if did_error then
+    --   djui_chat_message_create("it broke, attempting to print error:")
+    -- end
+    -- if did_error and wtf_happened then
+    --   djui_chat_message_create(wtf_happened)
+    -- end
   end
 
-  gPlayerSyncTable[0].lpShowHud = true
+  playerState.lpShowHud = true
   return true
 
   -- if msg:len() > 0 then
