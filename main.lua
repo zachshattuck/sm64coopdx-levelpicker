@@ -87,3 +87,24 @@ hook_chat_command("lp", "({number}) List and teleport to available levels", func
   return true
 
 end)
+
+
+
+local timer = 0
+
+local function hud_render()
+  if show_hud == false then
+    return
+  end 
+
+  djui_hud_set_color(255, 255, 255, 255)
+  djui_hud_print_text("HUD", 0, 0, 1)
+
+  timer = timer + 1
+  if timer == 60*5 then
+    show_hud = false
+    timer = 0
+  end
+end
+
+hook_event(HOOK_ON_HUD_RENDER, hud_render)
