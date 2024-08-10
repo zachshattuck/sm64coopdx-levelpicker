@@ -1,6 +1,8 @@
 -- name: Level Picker
 -- description: Easily view and warp to all levels, modded or vanilla.
 
+gGlobalSyncTable.showHud = false
+
 -- Max possible level number (`u16`).  
 -- *(Based on `CustomLevelInfo` in `smlua_level_utils.h`)*
 local MAX_LEVEL_NUMBER = 65535
@@ -74,13 +76,16 @@ hook_chat_command("lp", "({number}) List and teleport to available levels", func
     levels = scan_levels()
   end
 
-  if msg:len() > 0 then
-    try_warp_to_level(msg)
-    return true
-  end
-
-  -- List available levels
-  list_levels()
+  gGlobalSyncTable.showHud = true
   return true
+
+  -- if msg:len() > 0 then
+  --   try_warp_to_level(msg)
+  --   return true
+  -- end
+
+  -- -- List available levels
+  -- list_levels()
+  -- return true
 
 end)
