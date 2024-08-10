@@ -21,10 +21,14 @@ local function scan_levels()
   end
   return levels
 end
-local levels = scan_levels()
+local levels = nil --= scan_levels()
 
 
 local function list_levels()
+  if levels == nil then
+    return
+  end
+
   -- level: CustomLevelInfo
   for idx,level in pairs(levels) do
     local is_vanilla = level_is_vanilla_level(level.levelNum)
@@ -40,26 +44,38 @@ local function list_levels()
   end
 end
 
+local function try_warp_to_level(num) 
+  if levels == nil then
+    return
+  end
+
+  -- Attempt to parse level number    
+  local levelNum = tonumber(num)
+  if levelNum == nil then
+    djui_chat_message_create(COLOR_ERROR .. "Invalid level number." .. COLOR_DEFAULT)
+    return
+  end
+
+  -- level: CustomLevelInfo | nil
+  local level = levels[levelNum]
+  if level == nil then
+    djui_chat_message_create(COLOR_ERROR .. "Unknown level." .. COLOR_DEFAULT)
+    return
+  end
+
+  djui_chat_message_create(COLOR_AQUA .. "Warping to \"" .. level.fullName .. "\"..." .. COLOR_DEFAULT)
+  warp_to_level(level.levelNum, 1, 0)
+
+  return
+end
+
 hook_chat_command("lp", "List available levels", function (msg)
+  if levels == nil then
+    levels = scan_levels()
+  end
 
   if msg:len() > 0 then
-    -- Attempt to parse level number    
-    local levelNum = tonumber(msg)
-    if levelNum == nil then
-      djui_chat_message_create(COLOR_ERROR .. "Invalid level number." .. COLOR_DEFAULT)
-      return true
-    end
-
-    -- level: CustomLevelInfo | nil
-    local level = levels[levelNum]
-    if level == nil then
-      djui_chat_message_create(COLOR_ERROR .. "Unknown level." .. COLOR_DEFAULT)
-      return true
-    end
-
-    djui_chat_message_create(COLOR_AQUA .. "Warping to \"" .. level.fullName .. "\"..." .. COLOR_DEFAULT)
-    warp_to_level(level.levelNum, 1, 0)
-
+    try_warp_to_level(msg)
     return true
   end
 
