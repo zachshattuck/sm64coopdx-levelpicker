@@ -1,12 +1,16 @@
 -- name: Level Picker
 -- description: Easily view and warp to all levels, modded or vanilla.
 
-gGlobalSyncTable.lpShowHud = false
-gGlobalSyncTable.lpPage = 1
+
+
+
+-- gGlobalSyncTable is used for networking; shared between all clients
+gPlayerSyncTable[0].lpShowHud = false
+gPlayerSyncTable[0].lpPage = 1
 
 ---@type table | nil
 -- Array of levels, or `nil` if `scan_levels` has not been called yet.
-gGlobalSyncTable.lpLevels = nil
+gPlayerSyncTable[0].lpLevels = nil
 
 -- Max possible level number (`u16`).  
 -- *(Based on `CustomLevelInfo` in `smlua_level_utils.h`)*
@@ -21,6 +25,7 @@ local COLOR_AQUA = "\\#88EEAA\\"
 local function scan_levels()
   local levels = {}
   local count = 0
+
   for i = 1, MAX_LEVEL_NUMBER, 1 do
     local level = smlua_level_util_get_info(i)
     if level then
@@ -28,9 +33,9 @@ local function scan_levels()
       count = count+1
     end
   end
-  -- return levels
-  gGlobalSyncTable.lpLevels = levels
-  gGlobalSyncTable.levelsCount = count
+
+  gPlayerSyncTable[0].lpLevels = levels
+  gPlayerSyncTable[0].levelsCount = count
 end
 
 -- local function list_levels()
@@ -78,11 +83,11 @@ end
 
 -- TODO: Match on shortName and fullName too
 hook_chat_command("lp", "({number}) List and teleport to available levels", function (msg)
-  if gGlobalSyncTable.lpLevels == nil then
+  if gPlayerSyncTable[0].lpLevels == nil then
     scan_levels()
   end
 
-  gGlobalSyncTable.lpShowHud = true
+  gPlayerSyncTable[0].lpShowHud = true
   return true
 
   -- if msg:len() > 0 then
