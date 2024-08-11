@@ -1,3 +1,6 @@
+LP_BTN_HEIGHT = 35
+LP_BTN_BORDER_SIZE = 1
+LP_BTN_SIDE_PADDING = 10
 
 --- @param x number
 --- @param y number
@@ -5,16 +8,12 @@
 --- @param highlighted boolean?
 --- @param width_override number? Optionally override width
 --- @param center boolean? If width_override is wider than rendered text, should the text be centered
-function text_button(x, y, text, highlighted, width_override, center)
-
-  local BUTTON_HEIGHT = 35
-  local BORDER_SIZE = 1
-  local SIDE_PADDING = 10
+function lp_text_button(x, y, text, highlighted, width_override, center)
 
   local text_width = djui_hud_measure_text(text)
   local adjusted_text = text
-  local text_x = x + BORDER_SIZE + SIDE_PADDING
-  local text_y = y + BORDER_SIZE
+  local text_x = x + LP_BTN_BORDER_SIZE + LP_BTN_SIDE_PADDING
+  local text_y = y + LP_BTN_BORDER_SIZE
 
   --- @type number Width of the button
   local button_width
@@ -32,12 +31,12 @@ function text_button(x, y, text, highlighted, width_override, center)
     end
 
     -- If button is wider than rendered text and the user wants to center it, adjust text_x
-    if center and ((text_width + (SIDE_PADDING*2)) < button_width) then
+    if center and ((text_width + (LP_BTN_SIDE_PADDING*2)) < button_width) then
       text_x = x + (button_width/2) - (text_width/2)
     end
 
   else
-    button_width = text_width + (SIDE_PADDING*2)
+    button_width = text_width + (LP_BTN_SIDE_PADDING*2)
   end
 
 
@@ -49,14 +48,14 @@ function text_button(x, y, text, highlighted, width_override, center)
   end
   djui_hud_render_rect(
     x, y,
-    button_width, BUTTON_HEIGHT
+    button_width, LP_BTN_HEIGHT
   )
 
   -- main button body
   djui_hud_set_color(0, 0, 0, 255)
   djui_hud_render_rect(
-    x + BORDER_SIZE, y + BORDER_SIZE,
-    button_width - (BORDER_SIZE*2), BUTTON_HEIGHT - (BORDER_SIZE*2)
+    x + LP_BTN_BORDER_SIZE, y + LP_BTN_BORDER_SIZE,
+    button_width - (LP_BTN_BORDER_SIZE*2), LP_BTN_HEIGHT - (LP_BTN_BORDER_SIZE*2)
   )
 
 

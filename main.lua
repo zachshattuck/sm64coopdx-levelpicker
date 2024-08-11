@@ -136,11 +136,11 @@ local function hud_render()
   )
 
   -- Render close button
-  text_button(hud_x + hud_width - 100 - 5, hud_y + 5, "Close", selected_btn == BTN_CLOSE, 100, true)
+  lp_text_button(hud_x + hud_width - 100 - 5, hud_y + 5, "Close", selected_btn == BTN_CLOSE, 100, true)
 
-  text_button(hud_x + 5, hud_y + 45, "Test button", selected_btn == 1)
-  text_button(hud_x + 5, hud_y + 85, "Test button hightlighted", selected_btn == 2)
-  text_button(hud_x + 5, hud_y + 125, "Test button truncated", selected_btn == 3, 220, true)
+  lp_text_button(hud_x + 5, hud_y + 45, "Test button", selected_btn == 1)
+  lp_text_button(hud_x + 5, hud_y + 85, "Test button hightlighted", selected_btn == 2)
+  lp_text_button(hud_x + 5, hud_y + 125, "Test button truncated", selected_btn == 3, 220, true)
 end
 
 
