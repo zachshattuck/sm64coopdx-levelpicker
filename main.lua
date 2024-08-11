@@ -115,9 +115,9 @@ local function update_screen_size_variables()
 end
 
 
-
-local timer = 0
-local selected_btn = 0
+local BTN_CLOSE = 0
+local MAX_BTN = 3 -- TODO: Will need to take into account some pages will have less options
+local selected_btn = BTN_CLOSE
 
 local function hud_render()
   if show_hud == false then
@@ -136,21 +136,59 @@ local function hud_render()
   )
 
   -- Render close button
-  text_button(hud_x + hud_width - 100 - 5, hud_y + 5, "Close", selected_btn == 0, 100, true)
+  text_button(hud_x + hud_width - 100 - 5, hud_y + 5, "Close", selected_btn == BTN_CLOSE, 100, true)
 
-  text_button(hud_x + 5, hud_y + 5, "Test button")
-  text_button(hud_x + 5, hud_y + 45, "Test button hightlighted", true)
-  text_button(hud_x + 5, hud_y + 85, "Test button truncated", false, 220, true)
+  text_button(hud_x + 5, hud_y + 5, "Test button", selected_btn == 1)
+  text_button(hud_x + 5, hud_y + 45, "Test button hightlighted", selected_btn == 2)
+  text_button(hud_x + 5, hud_y + 85, "Test button truncated", selected_btn == 3, 220, true)
+end
 
 
-  timer = timer + 1
-  if timer == 60*5 then
+local JOYSTICK_COOLDOWN = 5
+local cooldown_timer = 0
+
+--- @param m MarioState
+local function mario_update(m)
+  if m.playerIndex ~= 0 then return end
+  if show_hud == false then return end 
+
+  m.freeze = 1
+
+  if m.controller.buttonPressed & B_BUTTON ~= 0 then
     show_hud = false
-    timer = 0
+    return
+  end
+
+  if m.controller.buttonPressed & A_BUTTON ~= 0 and selected_btn == BTN_CLOSE then
+    show_hud = false
+    return
+  end
+
+  -- Handle joystick cooldown
+  cooldown_timer = cooldown_timer - 1
+  -- if our stick is at 0, then set joystickCooldown to 0
+  if m.controller.stickY == 0 then cooldown_timer = 0 end
+  -- exit early if not ready for another input
+  if cooldown_timer > 0 then return end
+
+  if m.controller.stickY < -0.5 then
+    selected_btn = selected_btn + 1
+    if selected_btn > MAX_BTN then selected_btn = 0 end
+    cooldown_timer = JOYSTICK_COOLDOWN
+    play_sound(SOUND_MENU_MESSAGE_DISAPPEAR, gGlobalSoundSource)
+  end
+
+  if m.controller.stickY > 0.5 then
+    selected_btn = selected_btn - 1
+    if selected_btn < 0 then selected_btn = MAX_BTN end
+    cooldown_timer = JOYSTICK_COOLDOWN
+    play_sound(SOUND_MENU_MESSAGE_DISAPPEAR, gGlobalSoundSource)
   end
 end
 
-hook_event(HOOK_ON_HUD_RENDER, hud_render)
+
 hook_chat_command("lph", "Show level picker HUD", function (msg)
   show_hud = true
 end)
+hook_event(HOOK_ON_HUD_RENDER, hud_render)
+hook_event(HOOK_MARIO_UPDATE, mario_update)
