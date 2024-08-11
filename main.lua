@@ -117,6 +117,7 @@ end
 
 
 local timer = 0
+local selected_btn = 0
 
 local function hud_render()
   if show_hud == false then
@@ -126,15 +127,20 @@ local function hud_render()
   -- update screen-size based variables
   update_screen_size_variables()
 
+
+  -- Render hud backdrop
   djui_hud_set_color(0, 0, 0, 200)
   djui_hud_render_rect(
     hud_x, hud_y,
     hud_width, hud_height
   )
 
+  -- Render close button
+  text_button(hud_x + hud_width - 100 - 5, hud_y + 5, "Close", selected_btn == 0, 100, true)
+
   text_button(hud_x + 5, hud_y + 5, "Test button")
   text_button(hud_x + 5, hud_y + 45, "Test button hightlighted", true)
-  text_button(hud_x + 5, hud_y + 85, "Test button truncated", false, 220)
+  text_button(hud_x + 5, hud_y + 85, "Test button truncated", false, 220, true)
 
 
   timer = timer + 1
