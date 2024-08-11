@@ -4,7 +4,8 @@
 --- @param text string
 --- @param highlighted boolean?
 --- @param width_override number? Optionally override width
-function text_button(x, y, text, highlighted, width_override)
+--- @param center boolean? If width_override is wider than rendered text, should the text be centered
+function text_button(x, y, text, highlighted, width_override, center)
 
   local BUTTON_HEIGHT = 35
   local BORDER_SIZE = 1
@@ -22,10 +23,19 @@ function text_button(x, y, text, highlighted, width_override)
     button_width = width_override
 
     local char_size = djui_hud_measure_text("a")
-    local max_allowed_chars = math.floor(width_override / char_size)
+    local max_allowed_chars = math.floor(button_width / char_size)
+
+    -- If provided text is too wide to fit in given width override, truncate the text
     if text:len() > max_allowed_chars then
-      adjusted_text = string.sub(text, 1, max_allowed_chars+1)
+      adjusted_text = string.sub(text, 1, max_allowed_chars)
+      text_width = djui_hud_measure_text(adjusted_text)
     end
+
+    -- If button is wider than rendered text and the user wants to center it, adjust text_x
+    if center and ((text_width + (SIDE_PADDING*2)) < button_width) then
+      text_x = x + (button_width/2) - (text_width/2)
+    end
+
   else
     button_width = text_width + (SIDE_PADDING*2)
   end
