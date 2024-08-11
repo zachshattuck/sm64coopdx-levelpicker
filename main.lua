@@ -115,58 +115,6 @@ local function update_screen_size_variables()
 end
 
 
---- @param x number
---- @param y number
---- @param text string
---- @param width_override number? Optionally override width
-local function text_button(x, y, text, width_override)
-
-  local BUTTON_HEIGHT = 35
-  local BORDER_SIZE = 1
-  local SIDE_PADDING = 10
-
-  local text_width = djui_hud_measure_text(text)
-  local adjusted_text = text
-  local text_x = x + BORDER_SIZE + SIDE_PADDING
-  local text_y = y + BORDER_SIZE -- TODO: Figure out where to place this vertically.
-
-  --- @type number Width of the button
-  local button_width
-
-  if(width_override) then -- User wants a specific width, truncate text if necessary
-    button_width = width_override
-
-    local char_size = djui_hud_measure_text("a")
-    local max_allowed_chars = math.floor(width_override / char_size)
-    if text:len() > max_allowed_chars then
-      adjusted_text = string.sub(text, 1, max_allowed_chars )
-    end
-  else
-    button_width = text_width + (SIDE_PADDING*2)
-  end
-
-
-  -- 1px white outline
-  djui_hud_set_color(255, 255, 255, 255)
-  djui_hud_render_rect(
-    x, y,
-    button_width, BUTTON_HEIGHT
-  )
-
-  -- main button body
-  djui_hud_set_color(0, 0, 0, 255)
-  djui_hud_render_rect(
-    x + BORDER_SIZE, y + BORDER_SIZE,
-    button_width - (BORDER_SIZE*2), BUTTON_HEIGHT - (BORDER_SIZE*2)
-  )
-
-
-  -- white text
-  djui_hud_set_color(255, 255, 255, 255)
-  djui_hud_print_text(adjusted_text, text_x, text_y, 1)
-
-end
-
 
 local timer = 0
 
@@ -184,8 +132,9 @@ local function hud_render()
     hud_width, hud_height
   )
 
-  text_button( hud_x + 5, hud_y + 5, "Test button")
-  text_button( hud_x + 5, hud_y + 5 + 45, "Test button truncated", 200)
+  text_button(hud_x + 5, hud_y + 5, "Test button")
+  text_button(hud_x + 5, hud_y + 45, "Test button hightlighted", true)
+  text_button(hud_x + 5, hud_y + 85, "Test button truncated", false, 220)
 
 
   timer = timer + 1
