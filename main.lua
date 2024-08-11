@@ -138,9 +138,9 @@ local function hud_render()
   -- Render close button
   text_button(hud_x + hud_width - 100 - 5, hud_y + 5, "Close", selected_btn == BTN_CLOSE, 100, true)
 
-  text_button(hud_x + 5, hud_y + 5, "Test button", selected_btn == 1)
-  text_button(hud_x + 5, hud_y + 45, "Test button hightlighted", selected_btn == 2)
-  text_button(hud_x + 5, hud_y + 85, "Test button truncated", selected_btn == 3, 220, true)
+  text_button(hud_x + 5, hud_y + 45, "Test button", selected_btn == 1)
+  text_button(hud_x + 5, hud_y + 85, "Test button hightlighted", selected_btn == 2)
+  text_button(hud_x + 5, hud_y + 125, "Test button truncated", selected_btn == 3, 220, true)
 end
 
 
@@ -154,12 +154,8 @@ local function mario_update(m)
 
   m.freeze = 1
 
-  if m.controller.buttonPressed & B_BUTTON ~= 0 then
-    show_hud = false
-    return
-  end
-
-  if m.controller.buttonPressed & A_BUTTON ~= 0 and selected_btn == BTN_CLOSE then
+  if m.controller.buttonPressed & B_BUTTON ~= 0
+  or m.controller.buttonPressed & A_BUTTON ~= 0 and selected_btn == BTN_CLOSE then
     show_hud = false
     return
   end
