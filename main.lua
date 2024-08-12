@@ -133,7 +133,7 @@ local function update_screen_size_variables()
   local new_rows_per_page = math.floor((hud_height - 150) / 45)
   if new_rows_per_page ~= rows_per_page then
     hud_page = 1
-    selected_btn = 0
+    selected_btn = 1
   end
   rows_per_page = new_rows_per_page
 
