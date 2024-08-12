@@ -325,6 +325,7 @@ end
 
 hook_chat_command("lph", "Show level picker HUD", function (msg)
   show_hud = true
+  return true
 end)
 hook_event(HOOK_ON_HUD_RENDER, hud_render)
 hook_event(HOOK_MARIO_UPDATE, mario_update)
