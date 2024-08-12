@@ -108,9 +108,9 @@ local hud_height = screen_height * 3/4
 local hud_x = screen_width / 2 - hud_width / 2
 local hud_y = screen_height / 2 - hud_height / 2
 
-local level_row_width = hud_width*3/4
+local level_row_width = hud_width*7/8
 local rows_per_page = math.floor(
-  (hud_height - 120) / 45
+  (hud_height - 150) / 45
 )
 
 local btn_next_page = rows_per_page + 1
@@ -130,7 +130,7 @@ local function update_screen_size_variables()
 
   level_row_width = hud_width*3/4
 
-  local new_rows_per_page = math.floor((hud_height - 120) / 45)
+  local new_rows_per_page = math.floor((hud_height - 150) / 45)
   if new_rows_per_page ~= rows_per_page then
     hud_page = 1
     selected_btn = 0
@@ -180,15 +180,15 @@ local function hud_render()
 
     lp_text_button(
       (screen_width/2) - (level_row_width/2),
-      hud_y + 60 + 45*idx,
+      hud_y + 45 + 45*i,
       level.fullName .. " (" .. level.shortName .. ")",
       selected_btn == i,
       level_row_width
     )
 
-    ::continue::
     i = i + 1
     if i > rows_per_page then break end
+    ::continue::
   end  
 
   -- Render page controls and current page
@@ -212,17 +212,15 @@ local function hud_render()
     120,
     true
   )
-  
-  if hud_page > 1 then
-    lp_text_button(
-      (screen_width/2) - (level_row_width/2),
-      hud_y + hud_height - 60,
-      "Previous",
-      selected_btn == btn_prev_page,
-      120,
-      true
-    )
-  end
+
+  lp_text_button(
+    (screen_width/2) - (level_row_width/2),
+    hud_y + hud_height - 60,
+    "Previous",
+    selected_btn == btn_prev_page,
+    120,
+    true
+  )
 
 end
 
@@ -237,23 +235,20 @@ local function advance_selection()
   if hud_page == total_pages then rows_on_this_page = levels_count % rows_per_page end
 
   -- Move to next page btn if done with rows
-  if selected_btn == rows_on_this_page+1 then selected_btn = btn_next_page end
-
-  -- Move to start if no prev page button
-  if selected_btn > btn_next_page and hud_page == 1 then selected_btn = 0 end
+  if selected_btn == rows_on_this_page+1 then
+    selected_btn = btn_next_page
 
   -- Move to start if beyond prev page button
-  if selected_btn > btn_prev_page then selected_btn = 0 end
+  elseif selected_btn > btn_prev_page then
+    selected_btn = 0
+  end
 end
 
 local function retreat_selection()
   selected_btn = selected_btn - 1
 
   -- If beyond first button move to end
-  if selected_btn < 0 then
-    if hud_page == 1 then selected_btn = btn_next_page end
-    if hud_page ~= 1 then selected_btn = btn_prev_page end
-  end
+  if selected_btn < 0 then selected_btn = btn_prev_page end
 
   local total_pages = math.ceil(levels_count / rows_per_page)
   local rows_on_this_page = rows_per_page
@@ -261,6 +256,28 @@ local function retreat_selection()
 
   -- Move to last row in this page if less than next page button
   if selected_btn == btn_next_page - 1 then selected_btn = rows_on_this_page end
+end
+
+-- Handle "click" (pressing A on a button)
+local function handle_click()
+  local total_pages = math.ceil(levels_count / rows_per_page)
+  local page_start_idx = rows_per_page * (hud_page - 1) + 1
+
+  if selected_btn == btn_next_page then
+    hud_page = hud_page + 1
+    -- This should never be allowed to happen (buttons are toggled), but just in case
+    if hud_page > total_pages then hud_page = total_pages end
+    return
+  elseif selected_btn == btn_prev_page then
+    hud_page = hud_page - 1
+    -- This should never be allowed to happen (buttons are toggled), but just in case
+    if hud_page < 1 then hud_page = 1 end
+    return
+  else
+    try_warp_to_level(page_start_idx + selected_btn - 1)
+    show_hud = false
+  end
+
 end
 
 local JOYSTICK_COOLDOWN = 5
@@ -273,10 +290,16 @@ local function mario_update(m)
 
   m.freeze = 1
 
+  -- Explicitly check for close request
   if m.controller.buttonPressed & B_BUTTON ~= 0
   or m.controller.buttonPressed & A_BUTTON ~= 0 and selected_btn == BTN_CLOSE then
     show_hud = false
     return
+  end
+
+  -- Handle other presses
+  if m.controller.buttonPressed & A_BUTTON ~= 0 then
+    handle_click()
   end
 
   -- Handle joystick cooldown
