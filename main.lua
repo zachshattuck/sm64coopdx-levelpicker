@@ -12,18 +12,18 @@ local COLOR_AQUA = "\\#88EEAA\\"
 
 -- Array of levels, or `nil` if `scan_levels` has not been called yet.
 local levels = nil ---@type table | nil
-local levelsCount = 0
+local levels_count = 0
 -- Whether or not to show the HUD
 local show_hud = false
 
 local function scan_and_set_levels()
   levels = {}
-  levelsCount = 0
+  levels_count = 0
   for i = 1, MAX_LEVEL_NUMBER, 1 do
     local level = smlua_level_util_get_info(i)
     if level then
       table.insert(levels, level)
-      levelsCount = levelsCount + 1
+      levels_count = levels_count + 1
     end
   end
 
@@ -105,27 +105,42 @@ local screen_width = djui_hud_get_screen_width()
 local screen_height = djui_hud_get_screen_height()
 local hud_width = screen_width * 3/4
 local hud_height = screen_height * 3/4
-local level_row_width = hud_width*3/4
-local rows_per_page = math.floor((hud_height - 120) / 45)
 local hud_x = screen_width / 2 - hud_width / 2
 local hud_y = screen_height / 2 - hud_height / 2
 
-local max_btn = 3 -- TODO: Will need to take into account some pages will have less options
+local level_row_width = hud_width*3/4
+local rows_per_page = math.floor(
+  (hud_height - 120) / 45
+)
+
+local btn_next_page = rows_per_page + 1
+local btn_prev_page = rows_per_page + 2
+
+local hud_page = 1
+local BTN_CLOSE = 0
+local selected_btn = BTN_CLOSE
 
 local function update_screen_size_variables()
   screen_width = djui_hud_get_screen_width()
   screen_height = djui_hud_get_screen_height()
   hud_width = screen_width * 3/4
   hud_height = screen_height * 3/4
-  level_row_width = hud_width*3/4
-  rows_per_page = math.floor((hud_height - 120) / 45)
   hud_x = screen_width / 2 - hud_width / 2
   hud_y = screen_height / 2 - hud_height / 2
+
+  level_row_width = hud_width*3/4
+
+  local new_rows_per_page = math.floor((hud_height - 120) / 45)
+  if new_rows_per_page ~= rows_per_page then
+    hud_page = 1
+    selected_btn = 0
+  end
+  rows_per_page = new_rows_per_page
+
+  btn_next_page = rows_per_page + 1
+  btn_prev_page = rows_per_page + 2
 end
 
-
-local BTN_CLOSE = 0
-local selected_btn = BTN_CLOSE
 
 local function hud_render()
   if show_hud == false then return end 
@@ -146,7 +161,7 @@ local function hud_render()
   lp_text_button(hud_x + hud_width - 100 - 5, hud_y + 5, "Close", selected_btn == BTN_CLOSE, 100, true)
 
   -- Exit early if no levels
-  if levelsCount == 0 then
+  if levels_count == 0 then
     djui_hud_print_text("No levels to display.",
       screen_width/2 - djui_hud_measure_text("No levels to display.")/2,
       screen_height/2,
@@ -154,8 +169,15 @@ local function hud_render()
     return
   end
 
+  -- Render rows
   local i = 1
+  local page_start_idx = rows_per_page * (hud_page - 1) + 1
   for idx,level in pairs(levels) do
+    if idx < page_start_idx
+    or idx >= page_start_idx + rows_per_page then
+      goto continue -- wtf lua..
+    end
+
     lp_text_button(
       (screen_width/2) - (level_row_width/2),
       hud_y + 60 + 45*idx,
@@ -163,15 +185,83 @@ local function hud_render()
       selected_btn == i,
       level_row_width
     )
+
+    ::continue::
     i = i + 1
     if i > rows_per_page then break end
   end  
 
-  -- lp_text_button(hud_x + 5, hud_y + 45, "Test button", selected_btn == 1)
-  -- lp_text_button(hud_x + 5, hud_y + 85, "Test button hightlighted", selected_btn == 2)
-  -- lp_text_button(hud_x + 5, hud_y + 125, "Test button truncated", selected_btn == 3, 220, true)
+  -- Render page controls and current page
+  local total_pages = math.ceil(levels_count / rows_per_page)
+
+  djui_hud_set_color(255, 255, 255, 255)
+  local current_page_text = string.format("Page %d/%d", hud_page, total_pages)
+  djui_hud_print_text(
+    current_page_text,
+    (screen_width/2) - (djui_hud_measure_text(current_page_text)/2),
+    hud_y + hud_height - 60,
+    1
+  )
+
+
+  lp_text_button(
+    (screen_width/2) + (level_row_width/2) - 120,
+    hud_y + hud_height - 60,
+    "Next",
+    selected_btn == btn_next_page,
+    120,
+    true
+  )
+  
+  if hud_page > 1 then
+    lp_text_button(
+      (screen_width/2) - (level_row_width/2),
+      hud_y + hud_height - 60,
+      "Previous",
+      selected_btn == btn_prev_page,
+      120,
+      true
+    )
+  end
+
 end
 
+
+local function advance_selection()
+  selected_btn = selected_btn + 1
+
+  -- How many rows on this page?
+
+  local total_pages = math.ceil(levels_count / rows_per_page)
+  local rows_on_this_page = rows_per_page
+  if hud_page == total_pages then rows_on_this_page = levels_count % rows_per_page end
+
+  -- Move to next page btn if done with rows
+  if selected_btn == rows_on_this_page+1 then selected_btn = btn_next_page end
+
+  -- Move to start if no prev page button
+  if selected_btn > btn_next_page and hud_page == 1 then selected_btn = 0 end
+
+  -- Move to start if beyond prev page button
+  if selected_btn > btn_prev_page then selected_btn = 0 end
+end
+
+local function retreat_selection()
+  selected_btn = selected_btn - 1
+
+  -- If beyond first button move to end
+  if selected_btn < 0 then
+    if hud_page == 1 then selected_btn = btn_next_page end
+    if hud_page ~= 1 then selected_btn = btn_prev_page end
+  end
+
+  local total_pages = math.ceil(levels_count / rows_per_page)
+  local rows_on_this_page = rows_per_page
+  if hud_page == total_pages then rows_on_this_page = levels_count % rows_per_page end
+
+  -- Move to last row in this page if less than next page button
+  if selected_btn == btn_next_page - 1 then selected_btn = rows_on_this_page end
+end
 
 local JOYSTICK_COOLDOWN = 5
 local cooldown_timer = 0
@@ -197,15 +287,13 @@ local function mario_update(m)
   if cooldown_timer > 0 then return end
 
   if m.controller.stickY < -0.5 then
-    selected_btn = selected_btn + 1
-    if selected_btn > max_btn then selected_btn = 0 end
+    advance_selection()
     cooldown_timer = JOYSTICK_COOLDOWN
     play_sound(SOUND_MENU_MESSAGE_DISAPPEAR, gGlobalSoundSource)
   end
 
   if m.controller.stickY > 0.5 then
-    selected_btn = selected_btn - 1
-    if selected_btn < 0 then selected_btn = max_btn end
+    retreat_selection()
     cooldown_timer = JOYSTICK_COOLDOWN
     play_sound(SOUND_MENU_MESSAGE_DISAPPEAR, gGlobalSoundSource)
   end
